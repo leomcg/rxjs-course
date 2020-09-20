@@ -15,16 +15,16 @@ import {fromPromise} from 'rxjs/internal-compatibility';
 export class CourseDialogComponent implements OnInit, AfterViewInit {
 
     form: FormGroup;
-    course:Course;
+    course: Course;
 
     @ViewChild('saveButton', { static: true }) saveButton: ElementRef;
 
-    @ViewChild('searchInput', { static: true }) searchInput : ElementRef;
+    @ViewChild('searchInput', { static: true }) searchInput: ElementRef;
 
     constructor(
         private fb: FormBuilder,
         private dialogRef: MatDialogRef<CourseDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) course:Course ) {
+        @Inject(MAT_DIALOG_DATA) course: Course ) {
 
         this.course = course;
 
@@ -39,8 +39,23 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
 
     ngOnInit() {
 
+      this.form.valueChanges
+        .pipe(
+          filter(() => this.form.valid),
+          concatMap(changes => this.saveCourse(changes))
+        )
+        .subscribe(console.log);
 
+    }
 
+    saveCourse(changes) {
+      return fromPromise(fetch(`/api/courses/${this.course.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(changes),
+        headers: {
+          'content-type': 'application/json'
+        }
+      }));
     }
 
 
